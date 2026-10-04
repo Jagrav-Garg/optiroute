@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>{{ plan.title }} | OptiRoute</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; color: #242a2b; background: #f5f7f7; line-height: 1.6; }
+    main { max-width: 1080px; margin: auto; padding: 36px 28px; }
+    header { padding-bottom: 24px; border-bottom: 2px solid #196957; }
+    .brand { font-size: 15px; font-weight: 700; color: #196957; }
+    h1 { font-size: 32px; line-height: 1.2; margin: 12px 0; overflow-wrap: anywhere; }
+    h2 { font-size: 22px; margin: 32px 0 12px; }
+    h3 { font-size: 16px; margin: 0 0 8px; }
+    p { margin: 8px 0; }
+    a { color: #126957; overflow-wrap: anywhere; }
+    .meta { display: flex; gap: 12px 28px; flex-wrap: wrap; font-size: 14px; color: #4e595a; }
+    .review { padding: 16px 0; border-bottom: 1px solid #b7c4c2; color: #765a09; }
+    .photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 28px; }
+    figure { margin: 0; min-width: 0; }
+    figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; background: #e0e7e5; }
+    figcaption { font-size: 11px; overflow-wrap: anywhere; }
+    .day { padding: 4px 0 20px; border-bottom: 1px solid #cad3d1; }
+    .activity { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; padding: 14px 0; }
+    time { font-weight: 700; color: #196957; }
+    .small, .refs { font-size: 13px; color: #586261; }
+    .refs a { margin-right: 12px; }
+    .options { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
+    .option { padding: 16px 0; border-bottom: 1px solid #cad3d1; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 12px 8px; border-bottom: 1px solid #cad3d1; text-align: left; overflow-wrap: anywhere; }
+    th { color: #196957; }
+    .money { white-space: nowrap; }
+    li { margin-bottom: 8px; }
+    footer { margin-top: 36px; color: #586261; font-size: 12px; }
+    @media (max-width: 640px) { main { padding: 24px 18px; } h1 { font-size: 27px; } .photos, .options { grid-template-columns: 1fr; } .activity { grid-template-columns: 56px minmax(0,1fr); gap: 8px; } td, th { padding: 10px 4px; } }
+    @media print { body { background: white; } main { padding: 0; } .activity, figure, .option { break-inside: avoid; } a { color: inherit; } }
+  </style>
+</head>
+<body><main>
+  <header>
+    <div class="brand">OptiRoute / Travel Plan</div>
+    <h1>{{ plan.title }}</h1>
+    <div class="meta"><span>{{ plan.brief.origin }} to {{ plan.brief.destination }}</span><span>{{ plan.brief.start_date }} to {{ plan.brief.end_date }}</span><span>{{ plan.brief.travelers }} travelers</span><span>{{ plan.brief.currency }} {{ '%g'|format(plan.brief.budget) }} budget</span></div>
+    <p>{{ plan.summary }}</p>
+  </header>
+  {% if demo %}<div class="review"><strong>Demo itinerary.</strong> Fixture data, not live travel research.</div>{% endif %}
+  <div class="review"><strong>{{ 'Needs Review' if plan.validation.status == 'needs_review' else 'Basic Checks Passed' }}</strong>. Confirm fares, availability and opening hours before booking.</div>
+  {% if plan.images %}<section class="photos" aria-label="Destination photos">{% for photo in plan.images %}
+    <figure><img src="{{ photo.image_url }}" alt="{{ photo.title }}" loading="lazy" referrerpolicy="no-referrer"><figcaption><a href="{{ photo.source_url }}">{{ photo.title }}</a><br>{{ photo.author }} / <a href="{{ photo.license_url }}">{{ photo.license }}</a></figcaption></figure>
+  {% endfor %}</section>{% endif %}
+  <h2>Day-by-Day Itinerary</h2>
+  {% for day in plan.days %}<section class="day"><h3>{{ day.date }} / {{ day.theme }}</h3>
+    {% for activity in day.activities %}<div class="activity"><time>{{ activity.time }}</time><div><h3>{{ activity.title }}</h3><div class="small">{{ activity.location }} / {{ activity.duration_minutes }} min</div><p>{{ activity.details }}</p><div class="refs">{% for id in activity.source_ids %}{% if id in sources %}<a href="{{ sources[id].url }}">{{ sources[id].title }}</a>{% endif %}{% endfor %}</div></div></div>{% endfor %}
+  </section>{% endfor %}
+  <div class="options">{% for heading, items in [('Transport', plan.transport), ('Stay Options', plan.stays)] %}<section><h2>{{ heading }}</h2>{% for item in items %}<div class="option"><h3>{{ item.name }}</h3><p>{{ item.details }}</p><div class="refs">{% for id in item.source_ids %}{% if id in sources %}<a href="{{ sources[id].url }}">{{ sources[id].title }}</a>{% endif %}{% endfor %}</div></div>{% endfor %}</section>{% endfor %}</div>
+  <h2>Budget Estimates</h2><p class="small">Whole group, whole trip. Unknown costs are excluded from the known total.</p>
+  <table><thead><tr><th>Category</th><th>Estimate</th><th>Basis</th></tr></thead><tbody>{% for item in plan.budget_items %}<tr><td>{{ item.category.replace('_', ' ').title() }}</td><td class="money">{% if item.amount is none %}Unknown{% else %}{{ plan.brief.currency }} {{ '%g'|format(item.amount) }}{% endif %}</td><td>{{ item.notes }}</td></tr>{% endfor %}<tr><th>Known Total</th><th class="money">{{ plan.brief.currency }} {{ '%g'|format(plan.validation.known_estimated_total) }}</th><td>{{ 'Incomplete estimate' if plan.validation.has_unknown_costs else 'Estimated, not a quote' }}</td></tr></tbody></table>
+  <h2>Before You Book</h2><ul>{% for text in plan.validation.errors + plan.validation.warnings + plan.warnings + plan.assumptions %}<li>{{ text }}</li>{% endfor %}</ul>
+  <h2>Sources</h2><ul>{% for source in plan.sources %}<li><a href="{{ source.url }}">{{ source.title }}</a><div class="small">{{ source.provider }} / Retrieved {{ source.retrieved_at }}</div></li>{% endfor %}</ul>
+  <footer>OptiRoute / Cline SDK + LangGraph. API spend or reservation: ${{ '%.6f'|format(cost.run_accounted_usd) }}. Source links and photos may require an internet connection.</footer>
+</main></body></html>
