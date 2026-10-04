@@ -1,0 +1,1 @@
+{"version":3,"file":"geocoding.d.ts","sourceRoot":"","sources":["../../src/tools/geocoding.ts"],"names":[],"mappings":"AAGA,MAAM,WAAW,WAAW;IAAG,GAAG,EAAE,MAAM,CAAC;IAAC,GAAG,EAAE,MAAM,CAAA;CAAE;AACzD,wBAAgB,gBAAgB,CAAC,KAAK,EAAE,GAAG,GAAG,OAAO,CAIpD;AAMD,wBAAsB,eAAe,CAAC,IAAI,EAAE,MAAM,EAAE,WAAW,SAAK,EAAE,OAAO,SAAK,GAAG,OAAO,CAAC,WAAW,GAAG,IAAI,CAAC,CAsC/G"}
